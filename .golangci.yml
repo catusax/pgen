@@ -1,0 +1,38 @@
+linters:
+  # Enable specific linter
+  # https://golangci-lint.run/usage/linters/#enabled-by-default
+  enable:
+    - gocyclo
+    - godox
+    - asciicheck
+    - errorlint
+    - lll
+    - contextcheck
+    - gofmt
+    - nilerr
+    - nlreturn
+    - prealloc
+    - whitespace
+    - misspell
+    - goimports
+    - gofumpt
+
+issues:
+  fix: true
+
+linters-settings:
+  gocyclo:
+    # Minimal code complexity to report.
+    # Default: 30 (but we recommend 10-20)
+    min-complexity: 10
+  godox:
+    # Report any comments starting with keywords, this is useful for TODO or FIXME comments that
+    # might be left in the code accidentally and should be resolved before merging.
+    # Default: ["TODO", "BUG", "FIXME"]
+    keywords:
+      - NOTE
+      - OPTIMIZE # marks code that should be optimized before merging
+      - HACK # marks hack-around that should be removed before merging
+      - TODO
+      - BUG
+      - FIXME
