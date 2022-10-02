@@ -1,5 +1,7 @@
 package generator
 
+import "github.com/catusax/pgen/generator/custom_func"
+
 type Generator interface {
 	// SetOptions sets template engine binding
 	SetOptions(bindings map[string]any)
@@ -16,4 +18,12 @@ type Template struct {
 	Path string
 	// Template is the raw template to be parsed by template engine
 	Template []byte
+}
+
+func LoadCustomFunction(g Generator) {
+	funcs := custom_func.LoadWasmFunctions(C.WasmFuncs, C.confDir)
+
+	for _, function := range funcs {
+		g.RegisterFunc(function.Name, function.FuncP)
+	}
 }

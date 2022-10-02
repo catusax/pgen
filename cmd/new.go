@@ -24,25 +24,18 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		conf, err := generator.ReadConfig()
-		if err != nil {
-			log.Fatalf("read config: %v", err)
-		}
-		fmt.Println("readed config")
-
 		g := getGenerator(cmd.Flags().GetString("engine"))
 
-		fmt.Println("register")
 		registerFuncs(g)
-		registerTemplates(g, conf.OnceFiles, conf.HardFiles, conf.SoftFiles)
+		generator.LoadCustomFunction(g)
+		registerTemplates(g, generator.C.OnceFiles, generator.C.HardFiles, generator.C.SoftFiles)
 
-		bindings := generator.Bindings(conf.DefaultENVs).
+		bindings := generator.Bindings(generator.C.DefaultENVs).
 			Set("NAME", args[0]).
 			LoadFromENV()
 
 		g.SetOptions(bindings)
 
-		fmt.Println("check dir")
 		if _, err := os.Stat(args[0]); err == nil {
 			fmt.Println("already exists!")
 			os.Exit(1)
@@ -50,8 +43,7 @@ to quickly create a Cobra application.`,
 		os.Mkdir(args[0], 0o755)
 		os.Chdir(args[0])
 
-		fmt.Println("generate")
-		err = g.Generate()
+		err := g.Generate()
 		if err != nil {
 			log.Fatal(err)
 		}

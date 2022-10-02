@@ -1,0 +1,26 @@
+
+# OnceFiles only generate once when creating new project
+once_files:
+  - go.mod
+# SoftFiles will be generate every time when using generate command,
+# so you can use easily change file content by using ENV vairables.
+# you dont need to commit these files to git
+soft_files:
+  - main.go
+# HardFiles will be generate every time when using generate command with --hard flag
+hard_files:
+  - handler/{{.NAME}}.go
+# DefaultENVs is default environment variables when creating new project.
+# on existing project, Makefile variables will replace these variables.
+# by default the program will inject a env NAME this value of your project name.
+default_envs:
+  PGEN_SOMEKEY: VALUE
+
+# you can define your own functions with webassembly
+wasm_funcs:
+  # path of the webassembly library, relative to this config file's directory or absolute path
+  - path: wasm/target/wasm32-unknown-unknown/debug/wasm.wasm
+  # function to be exported, must have one cstring pointer input and one cstring pointer output
+  # see wasm example for more information
+    funcs:
+      - greet

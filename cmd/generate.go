@@ -5,6 +5,8 @@ package cmd
 
 import (
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/catusax/pgen/generator"
 	"github.com/spf13/cobra"
@@ -21,28 +23,27 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		conf, err := generator.ReadConfig()
-		if err != nil {
-			log.Fatalf("read config: %v", err)
-		}
-
 		g := getGenerator(cmd.Flags().GetString("engine"))
 
 		registerFuncs(g)
-		registerTemplates(g, conf.SoftFiles)
+		generator.LoadCustomFunction(g)
+
+		registerTemplates(g, generator.C.SoftFiles)
 
 		if hard, err := cmd.Flags().GetBool("hard"); err == nil && hard {
-			registerTemplates(g, conf.HardFiles)
+			registerTemplates(g, generator.C.HardFiles)
 		}
 
-		bindings := generator.Bindings(conf.DefaultENVs).
-			Set("NAME", args[0]).
+		wd, _ := os.Getwd()
+
+		bindings := generator.Bindings(generator.C.DefaultENVs).
+			Set("NAME", filepath.Base(wd)).
 			LoadFromFile().
 			LoadFromENV()
 
 		g.SetOptions(bindings)
 
-		err = g.Generate()
+		err := g.Generate()
 		if err != nil {
 			log.Fatal(err)
 		}

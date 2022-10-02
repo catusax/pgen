@@ -31,7 +31,7 @@ func (l *TextGeneraotr) SetOptions(bindings map[string]any) {
 }
 
 func (l *TextGeneraotr) Register(tmplDir, tmpl string) error {
-	fileBytes, err := os.ReadFile(filepath.Join(tmplDir, tmpl+".tmpl"))
+	fileBytes, _, err := ReadFile(filepath.Join(tmplDir, tmpl+".tmpl"))
 	if err != nil {
 		return fmt.Errorf("read template file: %w", err)
 	}
@@ -68,7 +68,9 @@ func (l *TextGeneraotr) Generate() error {
 			return fmt.Errorf("error mkdir %w", err)
 		}
 
-		file, err := os.OpenFile(filename.String(), os.O_WRONLY|os.O_CREATE, 0o644)
+		fmt.Println(filename.String())
+
+		file, err := os.OpenFile(filename.String(), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0o644)
 		if err != nil {
 			return fmt.Errorf("error open file %w", err)
 		}
@@ -79,6 +81,7 @@ func (l *TextGeneraotr) Generate() error {
 			return fmt.Errorf("error rendering template %s : %w",
 				_template.path, err)
 		}
+		file.Close()
 	}
 
 	return nil

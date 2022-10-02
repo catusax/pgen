@@ -35,7 +35,7 @@ func (l *LiquidGenerator) RegisterFunc(funcName string, function any) {
 }
 
 func (l *LiquidGenerator) Register(tmplDir, tmpl string) error {
-	fileBytes, err := os.ReadFile(filepath.Join(tmplDir, tmpl+".tmpl"))
+	fileBytes, _, err := ReadFile(filepath.Join(tmplDir, tmpl+".tmpl"))
 	if err != nil {
 		return err
 	}
