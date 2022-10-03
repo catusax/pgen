@@ -11,7 +11,6 @@ import (
 var engine *wasmtime.Engine
 
 func init() {
-	// config := wasmtime.NewWasiConfig()
 	engine = wasmtime.NewEngine()
 }
 

@@ -3,6 +3,9 @@ package generator
 import (
 	"fmt"
 	"path/filepath"
+	"sync"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/catusax/pgen/generator/custom_func"
 	"gopkg.in/yaml.v2"
@@ -25,11 +28,20 @@ type Config struct {
 	confDir string
 }
 
-var C *Config
+var (
+	c          *Config
+	configOnce sync.Once
+)
 
-func init() {
+func Conf() *Config {
+	configOnce.Do(initConfig)
+
+	return c
+}
+
+func initConfig() {
 	var err error
-	C, err = readConfig()
+	c, err = readConfig()
 	if err != nil {
 		panic(err)
 	}
@@ -42,8 +54,8 @@ func readConfig() (*Config, error) {
 		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
 
-	fmt.Println("loaded config from file: ",
-		filepath.Join(readPath, ".template", ".pgen_config.yaml")) // TODO: log level
+	log.Infoln("loaded config from file: ",
+		filepath.Join(readPath, ".template", ".pgen_config.yaml"))
 
 	err = yaml.Unmarshal(fileBytes, &config)
 	if err != nil {

@@ -31,9 +31,13 @@ func (l *TextGeneraotr) SetOptions(bindings map[string]any) {
 }
 
 func (l *TextGeneraotr) Register(tmplDir, tmpl string) error {
-	fileBytes, _, err := ReadFile(filepath.Join(tmplDir, tmpl+".tmpl"))
+	fileBytes, err := os.ReadFile(tmpl) // read file from current directory
 	if err != nil {
-		return fmt.Errorf("read template file: %w", err)
+		// search for parent directory's .template directory
+		fileBytes, _, err = ReadFile(filepath.Join(tmplDir, tmpl+".tmpl"))
+		if err != nil {
+			return fmt.Errorf("read template file: %w", err)
+		}
 	}
 
 	_template, err := template.New("").Funcs(l.funcs).Parse(string(fileBytes))

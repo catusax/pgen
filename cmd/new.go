@@ -5,9 +5,10 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/catusax/pgen/generator"
 	"github.com/spf13/cobra"
@@ -15,22 +16,28 @@ import (
 
 // newCmd represents the new command
 var newCmd = &cobra.Command{
-	Use:   "new",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "new <project-name>",
+	Short: "Generate a new project",
+	Long: `Generate a new project
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+this command will generate a new project in new directory if it not exist
+
+you must have a project template located in .template directory and 
+a configuration file named .pgen_config.yaml. It will recursively search 
+parent directories for a template and configuration file.
+
+view https://github.com/catusax/pgen for more information
+`,
+
+	Example: "pgen new myproject",
 	Run: func(cmd *cobra.Command, args []string) {
 		g := getGenerator(cmd.Flags().GetString("engine"))
 
 		registerFuncs(g)
 		generator.LoadCustomFunction(g)
-		registerTemplates(g, generator.C.OnceFiles, generator.C.HardFiles, generator.C.SoftFiles)
+		registerTemplates(g, generator.Conf().OnceFiles, generator.Conf().HardFiles, generator.Conf().SoftFiles)
 
-		bindings := generator.Bindings(generator.C.DefaultENVs).
+		bindings := generator.Bindings(generator.Conf().DefaultENVs).
 			Set("NAME", args[0]).
 			LoadFromENV()
 

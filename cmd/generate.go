@@ -4,9 +4,10 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"log"
 	"os"
 	"path/filepath"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/catusax/pgen/generator"
 	"github.com/spf13/cobra"
@@ -15,28 +16,29 @@ import (
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
 	Use:   "generate",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Regenerate current project",
+	Long: `Regenerate current project
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+you can replace a file's template by putting a new template file in the
+same directory. eg: [ main.go main.go.tmpl ] will use main.go.tmpl to
+generate main.go.
+	
+view https://github.com/catusax/pgen for more information`,
 	Run: func(cmd *cobra.Command, args []string) {
 		g := getGenerator(cmd.Flags().GetString("engine"))
 
 		registerFuncs(g)
 		generator.LoadCustomFunction(g)
 
-		registerTemplates(g, generator.C.SoftFiles)
+		registerTemplates(g, generator.Conf().SoftFiles)
 
 		if hard, err := cmd.Flags().GetBool("hard"); err == nil && hard {
-			registerTemplates(g, generator.C.HardFiles)
+			registerTemplates(g, generator.Conf().HardFiles)
 		}
 
 		wd, _ := os.Getwd()
 
-		bindings := generator.Bindings(generator.C.DefaultENVs).
+		bindings := generator.Bindings(generator.Conf().DefaultENVs).
 			Set("NAME", filepath.Base(wd)).
 			LoadFromFile().
 			LoadFromENV()

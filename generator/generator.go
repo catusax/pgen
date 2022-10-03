@@ -21,7 +21,7 @@ type Template struct {
 }
 
 func LoadCustomFunction(g Generator) {
-	funcs := custom_func.LoadWasmFunctions(C.WasmFuncs, C.confDir)
+	funcs := custom_func.LoadWasmFunctions(Conf().WasmFuncs, Conf().confDir)
 
 	for _, function := range funcs {
 		g.RegisterFunc(function.Name, function.FuncP)
