@@ -28,6 +28,7 @@ func LoadWasmFunctions(libs []Libs, basePath string) []Func {
 	var functions []Func
 	for _, lib := range libs {
 		store := wasmtime.NewStore(engine)
+		store.SetWasi(wasmtime.NewWasiConfig())
 
 		module, err := wasmtime.NewModuleFromFile(store.Engine, filepath.Join(basePath, lib.Path))
 		if err != nil {
@@ -36,10 +37,16 @@ func LoadWasmFunctions(libs []Libs, basePath string) []Func {
 			continue
 		}
 
-		instance, err := wasmtime.NewInstance(store, module, nil)
-		if err != nil {
-			panic(err)
-		}
+		linker := wasmtime.NewLinker(store.Engine)
+
+		linker.DefineWasi()
+
+		instance, _ := linker.Instantiate(store, module)
+
+		// instance, err := wasmtime.NewInstance(store, module, nil)
+		// if err != nil {
+		// 	panic(err)
+		// }
 
 		for _, FuncName := range lib.Funcs {
 			FuncName := FuncName
