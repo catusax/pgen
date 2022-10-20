@@ -12,6 +12,7 @@ type LiquidGenerator struct {
 	bindings  map[string]any
 	engine    *liquid.Engine
 	templates []liquidTemplate
+	patch     *Patch
 }
 
 type liquidTemplate struct {
@@ -23,6 +24,7 @@ func NewLiquidGenerator() Generator {
 	return &LiquidGenerator{
 		bindings: make(map[string]any),
 		engine:   liquid.NewEngine(),
+		patch:    NewPatch(),
 	}
 }
 
@@ -35,7 +37,7 @@ func (l *LiquidGenerator) RegisterFunc(funcName string, function any) {
 }
 
 func (l *LiquidGenerator) Register(tmplDir, tmpl string) error {
-	fileBytes, err := os.ReadFile(tmpl) // read file from current directory
+	fileBytes, err := os.ReadFile(tmpl + ".tmpl") // read file from current directory
 	if err != nil {
 		// search for parent directory's .template directory
 		fileBytes, _, err = ReadFile(filepath.Join(tmplDir, tmpl+".tmpl"))
@@ -47,6 +49,11 @@ func (l *LiquidGenerator) Register(tmplDir, tmpl string) error {
 	template, err := l.engine.ParseTemplate(fileBytes)
 	if err != nil {
 		return fmt.Errorf("failed to parse template: %s,%w ", tmpl, err)
+	}
+
+	err = l.patch.Register(tmplDir, tmpl)
+	if err != nil {
+		return fmt.Errorf("failed to Register patch: %w ", err)
 	}
 
 	l.templates = append(l.templates, liquidTemplate{
@@ -64,6 +71,8 @@ func (l *LiquidGenerator) Generate() error {
 			return fmt.Errorf("error rendering template %s at line %d: %w",
 				template.path, sourceErr.LineNumber(), sourceErr.Cause())
 		}
+
+		out = l.patch.Patch(template.path, out)
 
 		outPath, sourceErr := l.engine.ParseAndRenderString(template.path, l.bindings)
 		if sourceErr != nil {

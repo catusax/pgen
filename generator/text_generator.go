@@ -3,6 +3,7 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -12,6 +13,7 @@ type TextGeneraotr struct {
 	bindings  map[string]any
 	templates []TextTemplate
 	funcs     map[string]any
+	patch     *Patch
 }
 
 type TextTemplate struct {
@@ -23,6 +25,7 @@ func NewTextGenerator() Generator {
 	return &TextGeneraotr{
 		bindings: make(map[string]any),
 		funcs:    make(map[string]any),
+		patch:    NewPatch(),
 	}
 }
 
@@ -31,7 +34,7 @@ func (l *TextGeneraotr) SetOptions(bindings map[string]any) {
 }
 
 func (l *TextGeneraotr) Register(tmplDir, tmpl string) error {
-	fileBytes, err := os.ReadFile(tmpl) // read file from current directory
+	fileBytes, err := os.ReadFile(tmpl + ".tmpl") // read file from current directory
 	if err != nil {
 		// search for parent directory's .template directory
 		fileBytes, _, err = ReadFile(filepath.Join(tmplDir, tmpl+".tmpl"))
@@ -43,6 +46,11 @@ func (l *TextGeneraotr) Register(tmplDir, tmpl string) error {
 	_template, err := template.New("").Funcs(l.funcs).Parse(string(fileBytes))
 	if err != nil {
 		return fmt.Errorf("parse template %w", err)
+	}
+
+	err = l.patch.Register(tmplDir, tmpl)
+	if err != nil {
+		return fmt.Errorf("failed to Register patch: %w ", err)
 	}
 
 	l.templates = append(l.templates, TextTemplate{
@@ -74,18 +82,17 @@ func (l *TextGeneraotr) Generate() error {
 
 		fmt.Println(filename.String())
 
-		file, err := os.OpenFile(filename.String(), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0o644)
-		if err != nil {
-			return fmt.Errorf("error open file %w", err)
-		}
-		defer file.Close()
+		var out bytes.Buffer
 
-		err = _template.template.Funcs(l.funcs).Execute(file, l.bindings)
+		err = _template.template.Funcs(l.funcs).Execute(&out, l.bindings)
 		if err != nil {
 			return fmt.Errorf("error rendering template %s : %w",
 				_template.path, err)
 		}
-		file.Close()
+
+		fileContent := l.patch.Patch(_template.path, out.Bytes())
+
+		ioutil.WriteFile(filename.String(), []byte(fileContent), 0o644)
 	}
 
 	return nil
