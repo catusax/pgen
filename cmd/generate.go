@@ -30,10 +30,14 @@ view https://github.com/catusax/pgen for more information`,
 		registerFuncs(g)
 		generator.LoadCustomFunction(g)
 
-		registerTemplates(g, generator.Conf().SoftFiles)
+		if files, err := cmd.Flags().GetStringSlice("file"); err == nil && len(files) != 0 {
+			registerTemplates(g, files)
+		} else {
+			registerTemplates(g, generator.Conf().SoftFiles)
 
-		if hard, err := cmd.Flags().GetBool("hard"); err == nil && hard {
-			registerTemplates(g, generator.Conf().HardFiles)
+			if hard, err := cmd.Flags().GetBool("hard"); err == nil && hard {
+				registerTemplates(g, generator.Conf().HardFiles)
+			}
 		}
 
 		wd, _ := os.Getwd()
@@ -53,6 +57,7 @@ view https://github.com/catusax/pgen for more information`,
 }
 
 func init() {
+	generateCmd.Flags().StringSliceP("file", "f", nil, "specifica files to generate")
 	generateCmd.Flags().StringP("engine", "e", "text", "template engine liquid/text")
 	generateCmd.Flags().BoolP("hard", "", false, "generate hardFiles defined in config file")
 	rootCmd.AddCommand(generateCmd)
