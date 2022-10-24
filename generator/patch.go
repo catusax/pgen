@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -26,7 +27,11 @@ func (p *Patch) Register(tmplDir, tmpl string) error {
 		// search for parent directory's .template directory
 		fileBytes, _, err = ReadFile(filepath.Join(tmplDir, tmpl+".patch"))
 		if err != nil {
-			return fmt.Errorf("read template file: %w", err)
+			if !errors.Is(err, ErrFileNotFound) {
+				return fmt.Errorf("read template file: %w", err)
+			} else {
+				return nil
+			}
 		}
 	}
 

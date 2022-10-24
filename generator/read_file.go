@@ -29,5 +29,7 @@ func ReadFile(filename string) (fileBytes []byte, filePath string, err error) {
 		os.Chdir("..")
 	}
 
-	return nil, "", errors.New("file not found " + filename)
+	return nil, "", ErrFileNotFound
 }
+
+var ErrFileNotFound = errors.New("file not found")
