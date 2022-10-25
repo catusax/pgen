@@ -63,7 +63,7 @@ func ReadTemplate(tmplDir, tmpl string) (fileBytes []byte, filePath string, err 
 func ReadPatch(tmplDir, tmpl string) ([]diffmatchpatch.Patch, error) {
 	fileBytes, err := os.ReadFile(tmpl + ".tmpl.patch")
 	if err != nil {
-		fileBytes, _, err = ReadFile(filepath.Join(tmplDir, tmpl+".patch"))
+		fileBytes, _, err = ReadFile(filepath.Join(tmplDir, tmpl+".tmpl.patch"))
 		if err != nil {
 			if !errors.Is(err, ErrFileNotFound) {
 				return nil, fmt.Errorf("read template file: %w", err)
