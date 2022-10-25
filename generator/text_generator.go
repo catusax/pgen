@@ -13,7 +13,6 @@ type TextGeneraotr struct {
 	bindings  map[string]any
 	templates []TextTemplate
 	funcs     map[string]any
-	patch     *Patch
 }
 
 type TextTemplate struct {
@@ -25,7 +24,6 @@ func NewTextGenerator() Generator {
 	return &TextGeneraotr{
 		bindings: make(map[string]any),
 		funcs:    make(map[string]any),
-		patch:    NewPatch(),
 	}
 }
 
@@ -34,23 +32,14 @@ func (l *TextGeneraotr) SetOptions(bindings map[string]any) {
 }
 
 func (l *TextGeneraotr) Register(tmplDir, tmpl string) error {
-	fileBytes, err := os.ReadFile(tmpl + ".tmpl") // read file from current directory
+	fileBytes, _, err := ReadTemplate(tmplDir, tmpl)
 	if err != nil {
-		// search for parent directory's .template directory
-		fileBytes, _, err = ReadFile(filepath.Join(tmplDir, tmpl+".tmpl"))
-		if err != nil {
-			return fmt.Errorf("read template file: %w", err)
-		}
+		return fmt.Errorf("read template file: %w", err)
 	}
 
 	_template, err := template.New("").Funcs(l.funcs).Parse(string(fileBytes))
 	if err != nil {
 		return fmt.Errorf("parse template %w", err)
-	}
-
-	err = l.patch.Register(tmplDir, tmpl)
-	if err != nil {
-		return fmt.Errorf("failed to Register patch: %w ", err)
 	}
 
 	l.templates = append(l.templates, TextTemplate{
@@ -90,9 +79,7 @@ func (l *TextGeneraotr) Generate() error {
 				_template.path, err)
 		}
 
-		fileContent := l.patch.Patch(_template.path, out.Bytes())
-
-		ioutil.WriteFile(filename.String(), []byte(fileContent), 0o644)
+		ioutil.WriteFile(filename.String(), out.Bytes(), 0o644)
 	}
 
 	return nil
