@@ -37,9 +37,9 @@ to quickly create a Cobra application.`,
 			panic(err)
 		}
 
-		// dmp.DiffMain(string(file1), string(file2), false)
+		diffs := dmp.DiffMain(string(file1), string(file2), false)
 
-		fmt.Println(dmp.DiffPrettyText(dmp.DiffMain(string(file1), string(file2), false))) // FIXME: print correct patch file https://neil.fraser.name/software/diff_match_patch/demos/patch.html
+		fmt.Println(dmp.PatchToText(dmp.PatchMake(diffs)))
 	},
 }
 
