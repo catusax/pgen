@@ -13,14 +13,10 @@ import (
 
 // diffCmd represents the diff command
 var diffCmd = &cobra.Command{
-	Use:   "diff",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:     "diff origin_file modified_file",
+	Short:   "Print the diffmatchpatch result of two files",
+	Long:    `Print the diffmatchpatch result of two files`,
+	Example: "diff origin.txt modified.txt",
 	Run: func(cmd *cobra.Command, args []string) {
 		dmp := diffmatchpatch.New()
 
